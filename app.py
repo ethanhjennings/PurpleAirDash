@@ -7,46 +7,6 @@ from math import *
 
 app = Flask(__name__)
 
-def pm25_to_aqi(pm25_concentration):
-    epa_pm25 = [
-        (0.0,   12.0),
-        (12.1,  35.4),
-        (35.5,  55.4),
-        (55.5,  150.4),
-        (150.5, 250.4),
-        (250.5, 350.4),
-        (350.5, 500.4)   
-    ]
-    epa_aqi = [
-        (0,   50),
-        (51,  100),
-        (101, 150),
-        (151, 200),
-        (201, 300),
-        (301, 400),
-        (401, 500),
-    ]
-
-    if pm25_concentration > 500.4:
-        return 500
-
-    if pm25_concentration < 0:
-        return 0
-
-def fast_distance(lat1, long1, lat2, long2):
-    R = 6371 # radius of the earth in km
-    lat1 = radians(lat1)
-    lat2 = radians(lat2)
-    long1 = radians(long1)
-    long2 = radians(long2)
-    x = lat2 - lat1
-    y = (long2 - long1)*cos(0.5*(lat2+lat1))
-    return R*sqrt(x*x + y*y)
-
-@app.route('/')
-def root():
-    return redirect("https://github.com/ethanhjennings")
-
 @app.route('/aqi')
 def aqi():
     return app.send_static_file('index.html')
@@ -82,7 +42,4 @@ def bad_request(e):
     return jsonify(error=str(e)), 400
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', debug=True, port=443, ssl_context=(
-        '/etc/letsencrypt/live/ethanj.me/fullchain.pem',
-        '/etc/letsencrypt/live/ethanj.me/privkey.pem'
-    ))
+    app.run(host='0.0.0.0')
