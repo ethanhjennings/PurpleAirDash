@@ -7,39 +7,46 @@ from math import *
 
 app = Flask(__name__)
 
-@app.route('/aqi')
+@app.route('/')
 def aqi():
     return app.send_static_file('index.html')
 
-@app.route('/aqi/api', methods=['GET'])
+@app.route('/api', methods=['GET'])
 def api():
     lat = request.args.get('lat', type=float)
+    if lat is None:
+        return jsonify(status="error", message="Missing lat url argument"), 400
+
     long = request.args.get('long', type=float)
+    if long is None:
+        return jsonify(status="error", message="Missing long url argument"), 400
+
     radius = request.args.get('radius', type=float)
-    start = time.time()
-    with Client(('localhost', 6000)) as conn:
-        conn.send({
-            'lat': lat,
-            'long': long,
-            'radius': radius
-        })
-        data = conn.recv()
-        end = time.time()
-    return jsonify(data=data, time=end-start)
+    if radius is None:
+        return jsonify(status="error", message="Missing radius url argument"), 400
+
+    try:
+        with Client(('localhost', 6000)) as conn:
+            conn.send({
+                'lat': lat,
+                'long': long,
+                'radius': radius
+            })
+            results = conn.recv()
+            if results.get('status', None) != 'ok':
+                return jsonify(status="error", message="Bad response from purple air proxy"), 502
+    except ConnectionRefusedError:
+        return jsonify(status="error", message="Unable connect to purple air proxy"), 502
+
+    return jsonify(data=results['data'], status="ok")
 
 @app.route('/js/<path:filename>')
 def send_js(filename):
-    app.logger.info(filename)
     return send_from_directory('static/js', filename)
 
 @app.route('/css/<path:filename>')
 def send_css(filename):
-    app.logger.info(filename)
     return send_from_directory('static/css', filename)
 
-@app.errorhandler(400)
-def bad_request(e):
-    return jsonify(error=str(e)), 400
-
 if __name__ == '__main__':
-    app.run(host='0.0.0.0')
+    app.run(host='0.0.0.0', debug=True, ssl_context='adhoc')

@@ -31,7 +31,7 @@ log = logging.getLogger()
 
 class PurpleAirProxy:
     def __init__(self):
-        self.data = []
+        self.data = None
         self.data_lock = threading.Lock()
 
     def _fast_distance(self, lat1, long1, lat2, long2):
@@ -46,6 +46,10 @@ class PurpleAirProxy:
 
     def _find_nearest_sensors(self, lat, long, radius):
         #TODO: Speed up with numpy
+
+        if self.data == None:
+            return None
+
         with self.data_lock:
             results = []
             for d in self.data:
@@ -75,10 +79,55 @@ class PurpleAirProxy:
 
                         log.info('Calculation time: ' + str(end_time-start_time))
 
-                        conn.send(nearest_sensors)
+                        if nearest_sensors is not None:
+                            conn.send({'data': nearest_sensors, 'status': 'ok'})
+                        else:
+                            conn.send({'status': 'failure'})
                 except Exception as e:
                     # We want this server to stay alive always if possible, so just log and move on
                     log.error(traceback.format_exc())
+
+    def _clean_data(self, data):
+
+        # Every sensor has two channels, A and B. B channels are specified separately
+        # and are only linked with a " B" at the end of the label. So we need to
+        # merge the B's into the A's
+
+        # Remove extra whitespace which is messing up correlating A and B sensors
+        for d in data:
+            d['Label'] = ' '.join(d['Label'].strip().split())
+
+        data_map = {d['Label']: d for d in data}
+
+        new_data = []
+        for label, d in list(data_map.items()):
+            is_b_sensor = label.endswith(' B') or label.endswith(' P2')
+            if is_b_sensor:
+                if label.endswith(' P2'):
+                    a_label = label[:-1] + '1'
+                else:
+                    a_label = label[:label.rfind(' ')]
+                if a_label in data_map:
+                    data_map[a_label]['b_sensor'] = d
+                    del data_map[label]
+
+        # Filter out bad sensors
+        new_data = filter(
+            lambda d: (
+                d.get('DEVICE_LOCATIONTYPE', None) == 'outside' and
+                    # Ensure sensor is inside
+                d.get('Flag', None) != 1 and d['b_sensor'].get('Flag', None) != 1 and
+                    # Ensure not flagged for bad readings
+                d.get('A_H', None) != True and d['b_sensor'].get('Flag', None) != 1 and
+                    # Ensure not flagged for bad hardware
+                'Lat' in d and
+                'Lon' in d
+                    # Ensure it has a known location
+            ),
+            data_map.values()
+        )
+
+        return new_data
     
     def refresh_data(self):
         log.info("Refreshing data...")
@@ -94,17 +143,7 @@ class PurpleAirProxy:
                 log.warning("Bad json response:\n" + text)
                 return
 
-            new_data = new_data['results']
-
-            # Filter out bad sensors. Some are missing fields
-            new_data = filter(
-                lambda d: (
-                    d.get('DEVICE_LOCATIONTYPE', None) == 'outside' and
-                    'Lat' in d and
-                    'Lon' in d
-                ),
-                new_data
-            ) 
+            new_data = self._clean_data(new_data['results'])
 
             with self.data_lock:
                 self.data = list(new_data)
@@ -126,10 +165,9 @@ def main():
         [server],
         minutes=1
     )
- 
-    sched.start()
 
     server.refresh_data()
+    sched.start()
     server.run()
     
 
