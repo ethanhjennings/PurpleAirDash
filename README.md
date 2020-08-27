@@ -12,7 +12,7 @@ Create a virtual environment and install with pip
 pip install -r requirements.txt
 ```
 
-Note, location services requires ssl. app.py will run as Flask's adhoc ssl context so you don't need a cert.
+Note, location services requires ssl. `app.py` will run as Flask's adhoc ssl context so you don't need a cert.
 This might make the page show as unsafe in chrome but location services should *hopefully* work.
 You can add your own cert if you have one to `app.py`
 
