@@ -40,13 +40,9 @@ def api():
 
     return jsonify(data=results['data'], status="ok")
 
-@app.route('/js/<path:filename>')
+@app.route('/<path:filename>')
 def send_js(filename):
-    return send_from_directory('static/js', filename)
-
-@app.route('/css/<path:filename>')
-def send_css(filename):
-    return send_from_directory('static/css', filename)
+    return send_from_directory('static/', filename)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', debug=True, ssl_context='adhoc')

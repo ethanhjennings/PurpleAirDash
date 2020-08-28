@@ -1,54 +1,59 @@
 body {
   font-family: Arial, Helvetica, sans-serif;
-  background-color: #ececec;
+  background-color: white;
 }
 
-#channels {
-   display: flex;
-   flex-wrap: wrap;
-   justify-content: center;
-   width: 90%;
-   margin: auto;
-   flex-wrap: wrap;
+.location-bar {
+    margin-top: 2rem;
+    text-align: center;
 }
 
-.channel-card {
-    color: #505050;
+.location-input {
+    border: 2px solid #aaaaaa;
+    border-radius: 4px;
+    width: 20rem;
+    height: 3rem;
+    padding: 1rem;
+    margin: 0px 0px 0px 0px;
     box-sizing: border-box;
-    box-shadow: 0px 4px 8px 0px rgba(0,0,0,0.25);
-    background-color: white;
-    width: 400px;
-    height 400px;
-    margin: 1.2rem;
-    padding: 1.6rem;
+    font-size: 1.1rem;
     vertical-align: middle;
-    cursor: pointer;
-    transition: 0.2s;
 }
 
-.channel-card:hover {
-    background-color: #eeeeee;
-    color: #606060;
-    box-shadow: 0px 4px 8px 0px rgba(0,0,0,0.5);
+.location-btn {
+    width: 3rem;
+    height: 3rem;
+    border: 2px solid #aaaaaa;
+    border-radius: 4px;
+    margin-top: 0;
+    vertical-align: middle;
+
+    background-image: url("../icons/my_location.png");
+    background-repeat: no-repeat;
+    background-position: 50%, 50%;
+    background-size: 1.5rem 1.5rem;
+    background-color: #ddd;
 }
 
-.card-title {
-    font-size: 2rem;
+.location-btn:active {
+    background-color: #aaa;
 }
 
-.card-value {
-    font-size: 4rem;
-    color: #303030;
+#map {
+    width: 600px;
+    height: 400px;
+    text-align: center;
+    margin: 1rem auto;
 }
 
-.card-value-unit {
-    margin-left: 0.6rem;
-}
-
-.card-last-updated {
-    font-size: 1.2rem;
-}
-
-.no-data {
-    color: #707070;
+.circle-icon {
+    width: 40px !important;
+    height: 40px !important;
+    font-size: 16px;
+    line-height: 40px;
+    margin-left: -20px;
+    margin-top: -20px;
+    border-radius: 50%;
+    display: inline-block;
+    text-align: center;
 }
