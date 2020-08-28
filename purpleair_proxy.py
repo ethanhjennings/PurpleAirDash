@@ -11,6 +11,7 @@ import time
 import traceback
 
 from apscheduler.schedulers.background import BackgroundScheduler
+import numpy as np
 
 SERVER_ADDRESS = ('localhost', 6000)
 PURPLE_AIR_API = 'https://www.purpleair.com/json'
@@ -32,32 +33,28 @@ log = logging.getLogger()
 class PurpleAirProxy:
     def __init__(self):
         self.data = None
+        # Lats and longs refers to numpy arrays built in refresh_data
+        self.lats = None
+        self.longs = None
         self.data_lock = threading.Lock()
 
-    def _fast_distance(self, lat1, long1, lat2, long2):
-        R = 6371 # radius of the earth in km
-        lat1 = radians(lat1)
-        lat2 = radians(lat2)
-        long1 = radians(long1)
-        long2 = radians(long2)
-        x = lat2 - lat1
-        y = (long2 - long1)*cos(0.5*(lat2+lat1))
-        return R*sqrt(x*x + y*y)
-
     def _find_nearest_sensors(self, lat, long, radius):
-        #TODO: Speed up with numpy
-
         if self.data == None:
             return None
-
+        
         with self.data_lock:
-            results = []
-            for d in self.data:
-                distance = self._fast_distance(lat, long, d['Lat'], d['Lon'])
-                if distance < radius:
-                    results.append(d)
-        return results
+            R = 6371 # radius of the earth in km
+            cur_lat, cur_long = np.radians(lat), np.radians(long)
+            rad_lats, rad_longs = np.radians(self.lats), np.radians(self.longs)
+            a = np.subtract(rad_lats, cur_lat)
+            b = np.subtract(rad_longs, cur_long)
+            c = np.multiply(np.add(rad_lats, cur_lat), 0.5)
+            d = np.cos(c)
+            e = np.multiply(d, b)
+            f = np.add(np.power(a, 2), np.power(e, 2))
+            g = np.multiply(np.sqrt(f), R)
 
+        return [self.data[sensor] for sensor in np.where(g<radius)[0].tolist()]
     
     def run(self):
         log.info('Listening for connections...')
@@ -147,6 +144,8 @@ class PurpleAirProxy:
 
             with self.data_lock:
                 self.data = list(new_data)
+                self.lats = np.array([sensor['Lat'] for sensor in self.data])
+                self.longs = np.array([sensor['Lon'] for sensor in self.data])
 
             log.info("Refresh successful")
         else:
