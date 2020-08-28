@@ -10,7 +10,7 @@ import threading
 import time
 import traceback
 
-from apscheduler.schedulers.background import BackgroundScheduler
+from apscheduler.executors.pool import ThreadPoolExecutor
 import numpy as np
 
 SERVER_ADDRESS = ('localhost', 6000)
@@ -157,12 +157,16 @@ def main():
 
     server = PurpleAirProxy()
 
-    sched = BackgroundScheduler(daemon=True)
+    sched = BackgroundScheduler(daemon=True, executors= {
+        'threadpool': ThreadPoolExecutor(max_workers=1),
+         # This seems to fix a memory leak? why???
+    })
     sched.add_job(
         lambda server: server.refresh_data(),
         'interval',
         [server],
-        minutes=1
+        minutes=1,
+        executor='threadpool' # Also for the memory leak?
     )
 
     server.refresh_data()
