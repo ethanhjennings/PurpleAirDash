@@ -91,6 +91,8 @@ class PurpleAirProxy:
         # and are only linked with a " B" at the end of the label. So we need to
         # merge the B's into the A's
 
+        log.info("Got " + str(len(data)) + " sensors")
+
         # Remove extra whitespace which is messing up correlating A and B sensors
         for d in data:
             d['Label'] = ' '.join(d['Label'].strip().split())
@@ -116,8 +118,12 @@ class PurpleAirProxy:
                     # Ensure sensor is inside
                 d.get('Flag', None) != 1 and d['b_sensor'].get('Flag', None) != 1 and
                     # Ensure not flagged for bad readings
-                d.get('A_H', None) != True and d['b_sensor'].get('Flag', None) != 1 and
+                d.get('A_H', None) != True and d['b_sensor'].get('A_H', None) != True and
                     # Ensure not flagged for bad hardware
+                d.get('AGE', 99999) < 10 and d['b_sensor'].get('AGE', 99999) < 10 and
+                    # Make sure the data is fresh
+                'Stats' in d and 'Stats' in d['b_sensor'] and
+                    # Make sure the data is fresh
                 'Lat' in d and
                 'Lon' in d
                     # Ensure it has a known location

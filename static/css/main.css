@@ -1,29 +1,38 @@
 body {
   font-family: Arial, Helvetica, sans-serif;
   background-color: white;
+  color: #222222;
 }
 
 .location-bar {
-    margin-top: 2rem;
+    margin-top: 2.5rem;
     text-align: center;
 }
 
-.location-input {
-    border: 2px solid #aaaaaa;
+input {
+    border: 2px solid #222222;
     border-radius: 4px;
-    width: 20rem;
+    width: 16rem;
     height: 3rem;
     padding: 1rem;
     margin: 0px 0px 0px 0px;
     box-sizing: border-box;
     font-size: 1.1rem;
     vertical-align: middle;
+    color: #222222;
+}
+
+select {
+    border: 2px solid #222222;
+    border-radius: 4px;
+    height: 3rem;
+    font-size: 1rem;
 }
 
 .location-btn {
     width: 3rem;
     height: 3rem;
-    border: 2px solid #aaaaaa;
+    border: 2px solid #222222;
     border-radius: 4px;
     margin-top: 0;
     vertical-align: middle;
@@ -39,9 +48,65 @@ body {
     background-color: #aaa;
 }
 
+.aqi-display-box {
+    background-color: #eeeeee;
+    border-radius: 2rem;
+    width: 40rem;
+    height: 20rem;
+    margin: 1rem auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.aqi-value-box {
+    width: 40%;
+    height: 80%;
+    border-right: 2px solid #222222;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.aqi-message-box {
+    width: 60%;
+    height: 90%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.white-text {
+    color: #ffffff;
+}
+
+.aqi-value {
+   font-size: 6rem;
+}
+
+.aqi-label {
+    font-size: 2rem;
+}
+
+.aqi-level {
+    font-size: 2rem;
+    padding-left: 2rem;
+    padding-right: 2rem;
+    text-align: center;
+}
+
+.aqi-message {
+    font-size: 1rem;
+    padding-left: 2rem;
+    padding-right: 2rem;
+    padding-top: 1rem;
+}
+
 #map {
-    width: 600px;
-    height: 400px;
+    width: 40rem;
+    height: 30rem;
     text-align: center;
     margin: 1rem auto;
 }

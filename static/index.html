@@ -9,15 +9,38 @@
            crossorigin=""/>
     </head>
     <body>
+        <div class="aqi-display-box" id="aqi-display-box">
+            <div class="aqi-value-box">
+                <div class="aqi-value" id="aqi-value">--</div>
+                <div class="aqi-label">AQI</div>
+            </div>
+            <div class="aqi-message-box">
+                <div class="aqi-level" id="aqi-level"></div>
+                <div class="aqi-message" id="aqi-message"></div>
+            </div>
+        </div>
         <div class="location-bar">
             <input id="location_input" class="location-input" type="text" placeholder="lat/long coordinates">
             <button id="location_btn" class="location-btn" type="submit"></button>
+            <select id="radius">
+                <option value="0_5">0.5 km</option>
+                <option value="1" selected>1 km</option>
+                <option value="2">2 km</option>
+                <option value="5">5 km</option>
+                <option value="10">10 km</option>
+                <option value="20">20 km</option>
+            </select>
+            <select id="correction">
+                <option value="none" selected>No correction</option>
+                <option value="lrapa">LRAPA (smoke/wildfires)</option>
+            </select>
         </div>
         <div id="map"></div>
 
         <script src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js"
             integrity="sha512-gZwIG9x3wUXg2hdXF6+rVkLF/0Vi9U8D2Ntg4Ga5I5BZpVkVxlJWbSQtXPSiUTtC0TjtGOmxa1AJPuV0CPthew=="
             crossorigin=""></script>
+        <script src="js/aqi.js"></script>
         <script src="js/main.js"></script>
     </body>
 </html>
