@@ -76,6 +76,7 @@ class PurpleAirProxy:
                         end_time = time.time()
 
                         log.info('Calculation time: ' + str(end_time-start_time))
+                        log.info('Num sensors returned: ' + str(len(nearest_sensors) if nearest_sensors is not None else 0))
 
                         if nearest_sensors is not None:
                             conn.send({'data': nearest_sensors, 'status': 'ok'})
@@ -91,7 +92,9 @@ class PurpleAirProxy:
         # and are only linked with a " B" at the end of the label. So we need to
         # merge the B's into the A's
 
-        log.info("Got " + str(len(data)) + " sensors")
+        # Strip out unused fields
+        used_keys = ['Label', 'Lat', 'Lon', 'Flag', 'Stats', 'AGE', 'A_H', 'DEVICE_LOCATIONTYPE']
+        data = [{k: v for k, v in d.items() if k in used_keys} for d in data]
 
         # Remove extra whitespace which is messing up correlating A and B sensors
         for d in data:
@@ -112,7 +115,7 @@ class PurpleAirProxy:
                     del data_map[label]
 
         # Filter out bad sensors
-        new_data = filter(
+        new_data = list(filter(
             lambda d: (
                 d.get('DEVICE_LOCATIONTYPE', None) == 'outside' and
                     # Ensure sensor is inside
@@ -129,7 +132,7 @@ class PurpleAirProxy:
                     # Ensure it has a known location
             ),
             data_map.values()
-        )
+        ))
 
         return new_data
     
@@ -147,10 +150,12 @@ class PurpleAirProxy:
                 log.warning("Bad json response:\n" + text)
                 return
 
-            new_data = self._clean_data(new_data['results'])
+            new_data = new_data['results']
+            log.info("Got " + str(len(new_data)) + " sensors")
+            new_data = self._clean_data(new_data)
 
             with self.data_lock:
-                self.data = list(new_data)
+                self.data = new_data
                 self.lats = np.array([sensor['Lat'] for sensor in self.data])
                 self.longs = np.array([sensor['Lon'] for sensor in self.data])
 
