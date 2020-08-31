@@ -191,6 +191,9 @@ select:after {
         height: 20rem;
         border-radius: 2rem;
         margin: 0 auto;
+        margin-top: 1rem;
+        margin-left: auto;
+        margin-right: auto;
     }
 }
 
