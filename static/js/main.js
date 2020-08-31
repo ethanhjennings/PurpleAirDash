@@ -141,7 +141,7 @@ function refreshData() {
     updateMap(lat, lng, false);
 
     // Get latest sensor data
-    let url = '/api?lat=' + lat +'&long=' + lng +' &radius=' + radius;
+    let url = 'api?lat=' + lat +'&long=' + lng +' &radius=' + radius;
     fetch(url)
         .then(data=>{return data.json()})
         .then(res=>{
