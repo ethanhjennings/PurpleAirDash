@@ -10,29 +10,33 @@
     </head>
     <body>
         <div class="aqi-display-box" id="aqi-display-box">
-            <div class="aqi-value-box">
+            <div class="aqi-value-box" id="aqi-value-box">
                 <div class="aqi-value" id="aqi-value">--</div>
                 <div class="aqi-label">AQI</div>
             </div>
             <div class="aqi-message-box">
-                <div class="aqi-level" id="aqi-level"></div>
-                <div class="aqi-message" id="aqi-message"></div>
+                <div class="aqi-level transition" id="aqi-level">No location</div>
+                <div class="aqi-message transition" id="aqi-message">You don't have a location set. Please either enable sharing your location or copy/paste lat/long coords into the box</div>
             </div>
         </div>
-        <div class="location-bar">
-            <input id="location_input" class="location-input" type="text" placeholder="lat/long coordinates">
-            <button id="location_btn" class="location-btn" type="submit"></button>
+        <div class="options-bar">
+            <div class="location-input">
+                <input id="location_input" class="location-input" type="text" placeholder="paste lat, long coordinates">
+                <button id="location_btn" class="location-btn" type="submit"></button>
+            </div>
             <select id="radius">
-                <option value="0_5">0.5 km</option>
-                <option value="1" selected>1 km</option>
-                <option value="2">2 km</option>
+                <option value="0.5">0.5 km</option>
+                <option value="1">1 km</option>
+                <option value="2" selected>2 km</option>
                 <option value="5">5 km</option>
                 <option value="10">10 km</option>
+                <option value="20">20 km</option>
                 <option value="20">20 km</option>
             </select>
             <select id="correction">
                 <option value="none" selected>No correction</option>
-                <option value="lrapa">LRAPA (smoke/wildfires)</option>
+                <option value="lrapa">LRAPA (for smoke/wildires)</option>
+                <option value="aqandu">AQandU</option>
             </select>
         </div>
         <div id="map"></div>

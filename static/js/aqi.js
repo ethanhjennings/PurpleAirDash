@@ -71,7 +71,7 @@ function aqiToInfo(aqi) {
             x: 101,
             value: {
                 level: "Unhealthy for Sensitive Groups",
-                message: "Air quality is acceptable; however, for some pollutants there may be a moderate health concern for a very small number of people who are unusually sensitive to air pollution."
+                message: "Members of sensitive groups may experience health effects. The general public is less likely to be affected."
             }
         },
         {

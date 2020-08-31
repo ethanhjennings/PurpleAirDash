@@ -1,62 +1,112 @@
 body {
-  font-family: Arial, Helvetica, sans-serif;
-  background-color: white;
-  color: #222222;
-}
-
-.location-bar {
-    margin-top: 2.5rem;
-    text-align: center;
-}
-
-input {
-    border: 2px solid #222222;
-    border-radius: 4px;
-    width: 16rem;
-    height: 3rem;
-    padding: 1rem;
-    margin: 0px 0px 0px 0px;
-    box-sizing: border-box;
-    font-size: 1.1rem;
-    vertical-align: middle;
+    font-family: Arial, Helvetica, sans-serif;
+    background-color: #eeeeee;
     color: #222222;
+    margin: 0;
+    padding: 0;
+}
+
+.options-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    margin-top: 0.5rem;
+    margin-left: 1rem;
+    margin-right: 1rem;
+}
+
+input[type=text] {
+    width: 100%;
+    height: 3rem;
+    padding: 0.8rem 2.6rem 0.8rem 0.8rem;
+    box-sizing: border-box;
+    font-size: 1.0rem;
+    vertical-align: middle;
+    margin: 0;
+
+    color: #222222;
+    background-color: #eeeeee;
+
+    border: 2px solid #666666;
+    border-radius: 8px;
+    outline: none;
+    -webkit-appearance: none;
+}
+
+.location-input {
+    margin-top: 0.5rem;
+    margin-right: 0.3rem;
+    position: relative;
+    width: 100%;
+    max-width: 20rem;
+}
+
+input[type=text]:focus {
+    border-color: #222222;
 }
 
 select {
-    border: 2px solid #222222;
-    border-radius: 4px;
     height: 3rem;
     font-size: 1rem;
+    padding-left: 0.4rem;
+    padding-right: 1.2rem;
+    margin-right: 0.3rem;
+    border: 2px solid #666666;
+    border-radius: 8px;
+    outline: none;
+    appearance: none;
+
+    background-color: #eeeeee;
+
+    background-image: url("../icons/down_arrow.png");
+    background-repeat: no-repeat;
+    background-position: calc(100% - 8px) 50%;
+    background-size: 0.5rem 0.3rem;
+
+    margin-top: 0.5rem;
+    margin-left: 0rem;
+}
+select:active {
+    border-color: #222222;
+}
+
+select:after {
+    content: '\f078';
 }
 
 .location-btn {
-    width: 3rem;
+    width: 2.5rem;
     height: 3rem;
-    border: 2px solid #222222;
-    border-radius: 4px;
-    margin-top: 0;
     vertical-align: middle;
+    position: absolute;
+    right: 0.25rem;
+    cursor: pointer;
+
+    border: none;
+    outline: none;
+    appearance: none;
+    -webkit-tap-highlight-color: rgba(0,0,0,0);
+    -webkit-appearance: none;
 
     background-image: url("../icons/my_location.png");
     background-repeat: no-repeat;
     background-position: 50%, 50%;
     background-size: 1.5rem 1.5rem;
-    background-color: #ddd;
+    background-color: transparent;
+    opacity: 50%;
 }
 
 .location-btn:active {
-    background-color: #aaa;
+    opacity: 100%;
 }
 
 .aqi-display-box {
-    background-color: #eeeeee;
-    border-radius: 2rem;
-    width: 40rem;
-    height: 20rem;
-    margin: 1rem auto;
+    background-color: #cccccc;
     display: flex;
     align-items: center;
     justify-content: center;
+    transition: background .3s;
 }
 
 .aqi-value-box {
@@ -92,16 +142,26 @@ select {
 
 .aqi-level {
     font-size: 2rem;
-    padding-left: 2rem;
-    padding-right: 2rem;
+    padding-left: 1rem;
+    padding-right: 1rem;
     text-align: center;
 }
 
 .aqi-message {
     font-size: 1rem;
-    padding-left: 2rem;
-    padding-right: 2rem;
+    padding-left: 1rem;
+    padding-right: 1rem;
     padding-top: 1rem;
+}
+
+.transition {
+    animation: fadeIn ease 2s;
+}
+
+@keyframes fadeIn {
+    0% {opacity: 0%;}
+    66% {opacity: 0%;}
+    100% {opacity: 100%;}
 }
 
 #map {
@@ -109,6 +169,7 @@ select {
     height: 30rem;
     text-align: center;
     margin: 1rem auto;
+    margin-bottom: 0;
 }
 
 .circle-icon {
@@ -121,4 +182,37 @@ select {
     border-radius: 50%;
     display: inline-block;
     text-align: center;
+}
+
+/* For desktop */
+@media screen and (min-width: 600px) {
+    .aqi-display-box {
+        width: 40rem;
+        height: 20rem;
+        border-radius: 2rem;
+        margin: 0 auto;
+    }
+}
+
+/* For mobile devices */
+@media screen and (max-width: 600px) {
+    .aqi-display-box {
+        width: 100%;
+        height: 16rem;
+        margin-left: 0;
+        margin-right: 0;
+        margin-top: 0;
+    }
+    .aqi-value {
+       font-size: 4rem;
+    }
+    .aqi-label {
+        font-size: 1.2rem;
+    }
+    .aqi-level {
+        font-size: 1.5rem;
+    }
+    #map {
+        width: 100%;
+    }
 }
