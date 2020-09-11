@@ -152,64 +152,75 @@ function refreshData() {
 }
 
 function parseLatLong(str) {
-    const re = /(-?\d*\.?\d*)\s*,\s*(-?\d*\.?\d*)/
-    let match = str.match(re);
-    if (match !== null && match.length === 3) {
-        return [parseFloat(match[1]), parseFloat(match[2])];
+    const re = /(?<lat>-?\d*\.?\d*)°?\s*(?<lat_dir>N|S)?\s*,?\s*(?<lng>-?\d*\.?\d*)\s*°?\s*(?<lng_dir>W|E)?/g;
+    const match = re.exec(str);
+    if (match !== null && match.groups.lat && match.groups.lng) {
+        let lat = parseFloat(match.groups.lat);
+        let lng = parseFloat(match.groups.lng);
+        if (match.groups.lat_dir && match.groups.lat_dir === "S") {
+            lat *= -1;
+        }
+        if (match.groups.lng_dir && match.groups.lng_dir === "W") {
+            lng *= -1;
+        }
+        return [lat, lng];
     } else {
         return null;
     }
 }
 
-window.addEventListener('DOMContentLoaded', (event) => {
-    let location_btn = document.getElementById("location_btn");
-    location_btn.addEventListener("click", function() {
+let entrypoint = document.currentScript.getAttribute('data-entrypoint');
+if (entrypoint === "main") {
+    window.addEventListener('DOMContentLoaded', (event) => {
+        let location_btn = document.getElementById("location_btn");
+        location_btn.addEventListener("click", function() {
+            navigator.geolocation.getCurrentPosition(updateLocation);
+        });
+
+        let location_input = document.getElementById("location_input");
+        const handleInputEvent = (event) => {
+            let lat_long = parseLatLong(location_input.value);
+            if (lat_long !== null) {
+                updateLocation({
+                    coords:  {latitude: lat_long[0], longitude: lat_long[1]}
+                });
+            }
+        };
+        location_input.addEventListener("blur", handleInputEvent);
+        location_input.addEventListener("keyup", (event) => {
+            if (event.keyCode === 13) {
+                event.preventDefault();
+                handleInputEvent();
+            }
+        });
+
+        let radius_select = document.getElementById("radius");
+        let stored_radius = window.localStorage.getItem('radius');
+        if (stored_radius !== null) {
+            radius = stored_radius;
+            radius_select.value = stored_radius;
+        }
+        radius_select.addEventListener('change', (event) => {
+            radius = parseFloat(event.target.value);
+            window.localStorage.setItem('radius', radius);
+            refreshData();
+        });
+
+        let correction_select = document.getElementById('correction');
+        let stored_correction = window.localStorage.getItem('correction');
+        if (stored_correction !== null) {
+            correction_type = stored_correction;
+            correction_select.value = stored_correction;
+        }
+        correction_select.addEventListener('change', (event) => {
+            correction_type = event.target.value;
+            window.localStorage.setItem('correction', correction_type);
+            refreshData();
+        });
+
         navigator.geolocation.getCurrentPosition(updateLocation);
+
+        // Hack to get :active css selector working on mobile
+        document.addEventListener("touchstart", function() {}, true);
     });
-
-    let location_input = document.getElementById("location_input");
-    const handleInputEvent = (event) => {
-        let lat_long = parseLatLong(location_input.value);
-        if (lat_long !== null) {
-            updateLocation({
-                coords:  {latitude: lat_long[0], longitude: lat_long[1]}
-            });
-        }
-    };
-    location_input.addEventListener("blur", handleInputEvent);
-    location_input.addEventListener("keyup", (event) => {
-        if (event.keyCode === 13) {
-            event.preventDefault();
-            handleInputEvent();
-        }
-    });
-
-    let radius_select = document.getElementById("radius");
-    let stored_radius = window.localStorage.getItem('radius');
-    if (stored_radius !== null) {
-        radius = stored_radius;
-        radius_select.value = stored_radius;
-    }
-    radius_select.addEventListener('change', (event) => {
-        radius = parseFloat(event.target.value); 
-        window.localStorage.setItem('radius', radius);
-        refreshData();
-    });
-
-    let correction_select = document.getElementById('correction');
-    let stored_correction = window.localStorage.getItem('correction');
-    if (stored_correction !== null) {
-        correction_type = stored_correction;
-        correction_select.value = stored_correction;
-    }
-    correction_select.addEventListener('change', (event) => {
-        correction_type = event.target.value;
-        window.localStorage.setItem('correction', correction_type);
-        refreshData();
-    });
-
-    navigator.geolocation.getCurrentPosition(updateLocation);
-
-    // Hack to get :active css selector working on mobile
-    document.addEventListener("touchstart", function() {}, true);
-}); 
+}
