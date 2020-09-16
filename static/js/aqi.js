@@ -78,7 +78,7 @@ function aqiToInfo(aqi) {
             x: 151,
             value: {
                 level: "Unhealthy",
-                message: "Evryone may begin to experience health effects; members of sensitive groups may experience more serious health effects."
+                message: "Everyone may begin to experience health effects; members of sensitive groups may experience more serious health effects."
             }
         },
         {
