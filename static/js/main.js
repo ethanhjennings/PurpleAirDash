@@ -124,7 +124,7 @@ function updateAQIBox(sensors) {
 
 function updateLocation(position) {
     if (lat !== null && lng !== null &&
-        position.coords.latitude.toFixed(7) === lat.toFixed(7) && 
+        position.coords.latitude.toFixed(7) === lat.toFixed(7) &&
         position.coords.longitude.toFixed(7) === lng.toFixed(7)) {
         // No change, so no need to re-query and render everything
         return;
@@ -143,12 +143,13 @@ function refreshData() {
     // Get latest sensor data
     let url = 'api?lat=' + lat +'&long=' + lng +' &radius=' + radius;
     fetch(url)
-        .then(data=>{return data.json()})
+        .then(data=>data.json())
         .then(res=>{
             updateAQIBox(res['data']);
             updateMap(lat, lng, true);
+            updateURLFragment();
         });
-    
+
 }
 
 function parseLatLong(str) {
@@ -169,16 +170,47 @@ function parseLatLong(str) {
     }
 }
 
+function updateURLFragment() {
+  const location = document.getElementById('location_input').value;
+  const radius = document.getElementById('radius').value;
+  const correction = document.getElementById('correction').value;
+
+  const params = new URLSearchParams({location, radius, correction});
+  const fragment = '#' + params.toString();
+  window.history.replaceState(null, '', fragment);
+}
+
+function parseURLFragment() {
+    const obj = {};
+
+    const fragment = window.location.hash.substring(1);
+    const params = new URLSearchParams(fragment);
+
+    ['radius', 'location', 'correction'].forEach(key => {
+        if (params.has(key)) {
+            obj[key] = params.get(key);
+        }
+    });
+
+    return obj;
+}
+
 let entrypoint = document.currentScript.getAttribute('data-entrypoint');
 if (entrypoint === "main") {
     window.addEventListener('DOMContentLoaded', (event) => {
+        const {
+            radius: url_radius,
+            location: url_location,
+            correction: url_correction,
+        } = parseURLFragment();
+
         let location_btn = document.getElementById("location_btn");
         location_btn.addEventListener("click", function() {
             navigator.geolocation.getCurrentPosition(updateLocation);
         });
 
         let location_input = document.getElementById("location_input");
-        const handleInputEvent = (event) => {
+        const handleInputEvent = () => {
             let lat_long = parseLatLong(location_input.value);
             if (lat_long !== null) {
                 updateLocation({
@@ -196,7 +228,10 @@ if (entrypoint === "main") {
 
         let radius_select = document.getElementById("radius");
         let stored_radius = window.localStorage.getItem('radius');
-        if (stored_radius !== null) {
+        if (url_radius) {
+            radius = url_radius;
+            radius_select.value = url_radius;
+        } else if (stored_radius !== null) {
             radius = stored_radius;
             radius_select.value = stored_radius;
         }
@@ -208,7 +243,10 @@ if (entrypoint === "main") {
 
         let correction_select = document.getElementById('correction');
         let stored_correction = window.localStorage.getItem('correction');
-        if (stored_correction !== null) {
+        if (url_correction) {
+            correction_type = url_correction;
+            correction_select.value = url_correction;
+        } else if (stored_correction !== null) {
             correction_type = stored_correction;
             correction_select.value = stored_correction;
         }
@@ -218,7 +256,12 @@ if (entrypoint === "main") {
             refreshData();
         });
 
-        navigator.geolocation.getCurrentPosition(updateLocation);
+        if (!url_location) {
+            navigator.geolocation.getCurrentPosition(updateLocation);
+        } else {
+            location_input.value = url_location;
+            handleInputEvent();
+        }
 
         // Hack to get :active css selector working on mobile
         document.addEventListener("touchstart", function() {}, true);
