@@ -106,7 +106,9 @@ select:after {
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: background .3s;
+    /* This transition seems to break the Glimpse app.
+       TODO: add it back in the future if it's working*/
+    /*transition: background .3s;*/
 }
 
 .aqi-value-box {
