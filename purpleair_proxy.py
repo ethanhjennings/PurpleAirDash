@@ -44,6 +44,7 @@ class PurpleAirProxy:
         self.lats = None
         self.lons = None
         self.data_lock = threading.Lock()
+        self.last_modified = time.time()
 
     def _find_nearest_sensors(self, lat, lon, radius):
         if self.data == None:
@@ -85,7 +86,11 @@ class PurpleAirProxy:
                         log.info('Num sensors returned: ' + str(len(nearest_sensors) if nearest_sensors is not None else 0))
 
                         if nearest_sensors is not None:
-                            conn.send({'data': nearest_sensors, 'status': 'ok'})
+                            conn.send({
+                                'data': nearest_sensors,
+                                'last_modified': self.last_modified,
+                                'status': 'ok'
+                            })
                         else:
                             conn.send({'status': 'failure'})
                 except Exception as e:
@@ -154,6 +159,7 @@ class PurpleAirProxy:
                 self.lats = np.array([sensor['lat'] for sensor in self.data])
                 self.lons = np.array([sensor['lon'] for sensor in self.data])
 
+            self.last_modified = time.time()
             log.info("Refresh successful")
         else:
             log.error("Error! Bad response from purpleair (" + str(r.status_code) + "):\n" + r.text)
