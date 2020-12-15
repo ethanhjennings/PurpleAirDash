@@ -15,7 +15,13 @@ from apscheduler.executors.pool import ThreadPoolExecutor
 import numpy as np
 
 SERVER_ADDRESS = ('localhost', 6000)
-PURPLE_AIR_API = 'https://www.purpleair.com/json'
+
+API_URL = 'https://api.purpleair.com/v1/sensors'
+API_FIELDS = ['sensor_index', 'name', 'location_type', 'latitude', 'longitude', 'confidence', 'pm2.5_10minute']
+SENSOR_MAX_AGE = 60*10 # We want the 10 minute average so longer than that could mess with readings
+
+with open('api_key.txt') as f:
+    API_KEY = f.read().strip()
 
 logging.basicConfig(
     level=logging.INFO,
@@ -86,63 +92,22 @@ class PurpleAirProxy:
                     # We want this server to stay alive always if possible, so just log and move on
                     log.error(traceback.format_exc())
 
-    def _clean_data(self, data):
-
-        # Every sensor has two channels, A and B. B channels are specified separately
-        # and are only linked with a " B" at the end of the label. So we need to
-        # merge the B's into the A's
-
-        # Strip out unused fields
-        used_keys = ['Label', 'Lat', 'Lon', 'Flag', 'Stats', 'AGE', 'A_H', 'DEVICE_LOCATIONTYPE']
-        data = [{k: v for k, v in d.items() if k in used_keys} for d in data]
-
-        # Remove extra whitespace which is messing up correlating A and B sensors
-        for d in data:
-            d['Label'] = ' '.join(d['Label'].strip().split())
-
-        data_map = {d['Label']: d for d in data}
-
-        new_data = []
-        for label, d in list(data_map.items()):
-            is_b_sensor = label.endswith(' B') or label.endswith(' P2')
-            if is_b_sensor:
-                if label.endswith(' P2'):
-                    a_label = label[:-1] + '1'
-                else:
-                    a_label = label[:label.rfind(' ')]
-                if a_label in data_map:
-                    data_map[a_label]['b_sensor'] = d
-                    del data_map[label]
-
-        # Filter out bad sensors
-        new_data = list(filter(
-            lambda d: (
-                d.get('DEVICE_LOCATIONTYPE', None) == 'outside' and
-                    # Ensure sensor is inside
-                d.get('Flag', None) != 1 and d['b_sensor'].get('Flag', None) != 1 and
-                    # Ensure not flagged for bad readings
-                d.get('A_H', None) != True and d['b_sensor'].get('A_H', None) != True and
-                    # Ensure not flagged for bad hardware
-                d.get('AGE', 99999) < 10 and d['b_sensor'].get('AGE', 99999) < 10 and
-                    # Make sure the data is fresh
-                'Stats' in d and 'Stats' in d['b_sensor'] and
-                    # Make sure the data is fresh
-                'Lat' in d and
-                'Lon' in d
-                    # Ensure it has a known location
-            ),
-            data_map.values()
-        ))
-
-        return new_data
-    
     def refresh_data(self):
         log.info("Refreshing data...")
 
-        r = requests.get(PURPLE_AIR_API)
+        r = requests.get(
+            API_URL,
+            params = {
+                'fields': ','.join(API_FIELDS),
+                'max_age': SENSOR_MAX_AGE
+            },
+            headers = {
+                'X-API-Key': API_KEY
+            }
+        )
         if r.status_code == 200:
             try:
-                new_data = json.loads(r.text)
+                json_response = json.loads(r.text)
             except ValueError: 
                 # Purple Air sometimes just craps out and cuts off their json response.
                 # I'm pretty sure this is a bug on their end. Not much to do except log it and move on.
@@ -150,14 +115,44 @@ class PurpleAirProxy:
                 log.warning("Bad json response:\n" + text)
                 return
 
-            new_data = new_data['results']
+            new_data = json_response['data']
+            field_idx = {f: i for i,f in enumerate(json_response['fields'])}
             log.info("Got " + str(len(new_data)) + " sensors")
-            new_data = self._clean_data(new_data)
+
+            # Filter out bad sensors
+            new_data = [
+                d for d in new_data if (
+                    # Ensure sensor is outside
+                    d[field_idx['location_type']] == 0 and
+
+                    # Ensure confidence is not too low
+                    d[field_idx['confidence']] >= 25 and
+
+                    # Ensure we have all fields
+                    d[field_idx['latitude']] is not None and
+                    d[field_idx['longitude']] is not None and
+                    d[field_idx['longitude']] is not None and
+                    d[field_idx['pm2.5_10minute']] is not None
+                )
+            ]
+
+            log.info("Got " + str(len(new_data)) + " sensors after cleaning")
+
+            # Convert to sensor format
+            new_data = [
+                {
+                    'name': d[field_idx['name']],
+                    'lat': float(d[field_idx['latitude']]),
+                    'lon': float(d[field_idx['longitude']]),
+                    'pm2.5': float(d[field_idx['pm2.5_10minute']])
+                }
+                for d in new_data
+            ]
 
             with self.data_lock:
                 self.data = new_data
-                self.lats = np.array([sensor['Lat'] for sensor in self.data])
-                self.longs = np.array([sensor['Lon'] for sensor in self.data])
+                self.lats = np.array([sensor['lat'] for sensor in self.data])
+                self.longs = np.array([sensor['lon'] for sensor in self.data])
 
             log.info("Refresh successful")
         else:

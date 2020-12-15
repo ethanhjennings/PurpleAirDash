@@ -39,15 +39,11 @@ function populateAqiMarkers(sensors) {
     }
 }
 
-function sensorsToAqi(sensors, timeframe) {
+function sensorsToAqi(sensors) {
     let total_pm25 = 0;
     let aqis = [];
     for (let i = 0; i < sensors.length; i++) {
-        let a_stats = JSON.parse(sensors[i].Stats);
-        let b_stats = JSON.parse(sensors[i].b_sensor.Stats);
-        let pm25_a = parseFloat(a_stats[timeframe]);
-        let pm25_b = parseFloat(b_stats[timeframe]);
-        let pm25 = (pm25_a + pm25_b)/2;
+        let pm25 = sensors[i]['pm2.5'];
 
         if (correction_type === "lrapa") {
             pm25 = Math.max(0.5 * pm25 - 0.66, 0);
@@ -59,7 +55,7 @@ function sensorsToAqi(sensors, timeframe) {
 
         let aqi = pm25ToAQI(pm25);
         aqis.push(
-            {aqi: aqi, lat: sensors[i].Lat, lng: sensors[i].Lon}
+            {aqi: aqi, lat: sensors[i].lat, lng: sensors[i].lon}
         );
     }
     return {
@@ -90,7 +86,7 @@ function updateMap(lat, lng, zoom) {
 }
 
 function updateAQIBox(sensors) {
-    let results = sensorsToAqi(sensors, 'v1');
+    let results = sensorsToAqi(sensors);
     clearMarkers();
     populateAqiMarkers(results.aqis);
 
@@ -124,15 +120,15 @@ function updateAQIBox(sensors) {
 
 function updateLocation(position) {
     if (lat !== null && lng !== null &&
-        position.coords.latitude.toFixed(7) === lat.toFixed(7) &&
-        position.coords.longitude.toFixed(7) === lng.toFixed(7)) {
+        position.coords.latitude.toFixed(5) === lat.toFixed(5) &&
+        position.coords.longitude.toFixed(5) === lng.toFixed(5)) {
         // No change, so no need to re-query and render everything
         return;
     }
     lat = position.coords.latitude;
     lng = position.coords.longitude;
     let location_input = document.getElementById("location_input");
-    location_input.value = lat.toFixed(7) + ', ' + lng.toFixed(7);
+    location_input.value = lat.toFixed(5) + ', ' + lng.toFixed(5);
     refreshData();
 }
 
