@@ -40,21 +40,21 @@ log = logging.getLogger()
 class PurpleAirProxy:
     def __init__(self):
         self.data = None
-        # Lats and longs refers to numpy arrays built in refresh_data
+        # lats and lons refers to numpy arrays built in refresh_data
         self.lats = None
-        self.longs = None
+        self.lons = None
         self.data_lock = threading.Lock()
 
-    def _find_nearest_sensors(self, lat, long, radius):
+    def _find_nearest_sensors(self, lat, lon, radius):
         if self.data == None:
             return None
         
         with self.data_lock:
             R = 6371 # radius of the earth in km
-            cur_lat, cur_long = np.radians(lat), np.radians(long)
-            rad_lats, rad_longs = np.radians(self.lats), np.radians(self.longs)
+            cur_lat, cur_lon = np.radians(lat), np.radians(lon)
+            rad_lats, rad_lons = np.radians(self.lats), np.radians(self.lons)
             a = np.subtract(rad_lats, cur_lat)
-            b = np.subtract(rad_longs, cur_long)
+            b = np.subtract(rad_lons, cur_lon)
             c = np.multiply(np.add(rad_lats, cur_lat), 0.5)
             d = np.cos(c)
             e = np.multiply(d, b)
@@ -77,7 +77,7 @@ class PurpleAirProxy:
                         start_time = time.time()
                         nearest_sensors = self._find_nearest_sensors(
                                     request['lat'],
-                                    request['long'],
+                                    request['lon'],
                                     request['radius'])
                         end_time = time.time()
 
@@ -152,7 +152,7 @@ class PurpleAirProxy:
             with self.data_lock:
                 self.data = new_data
                 self.lats = np.array([sensor['lat'] for sensor in self.data])
-                self.longs = np.array([sensor['lon'] for sensor in self.data])
+                self.lons = np.array([sensor['lon'] for sensor in self.data])
 
             log.info("Refresh successful")
         else:

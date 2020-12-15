@@ -137,7 +137,7 @@ function refreshData() {
     updateMap(lat, lng, false);
 
     // Get latest sensor data
-    let url = 'api?lat=' + lat +'&long=' + lng +' &radius=' + radius;
+    let url = 'api?lat=' + lat +'&lon=' + lng +' &radius=' + radius;
     fetch(url)
         .then(data=>data.json())
         .then(res=>{
@@ -207,10 +207,10 @@ if (entrypoint === "main") {
 
         let location_input = document.getElementById("location_input");
         const handleInputEvent = () => {
-            let lat_long = parseLatLong(location_input.value);
-            if (lat_long !== null) {
+            let lat_lon = parseLatLong(location_input.value);
+            if (lat_lon !== null) {
                 updateLocation({
-                    coords:  {latitude: lat_long[0], longitude: lat_long[1]}
+                    coords:  {latitude: lat_lon[0], longitude: lat_lon[1]}
                 });
             }
         };

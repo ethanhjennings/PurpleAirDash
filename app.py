@@ -17,9 +17,9 @@ def api():
     if lat is None:
         return jsonify(status="error", message="Missing lat url argument"), 400
 
-    long = request.args.get('long', type=float)
-    if long is None:
-        return jsonify(status="error", message="Missing long url argument"), 400
+    lon = request.args.get('lon', type=float)
+    if lon is None:
+        return jsonify(status="error", message="Missing lon url argument"), 400
 
     radius = request.args.get('radius', type=float)
     if radius is None:
@@ -29,7 +29,7 @@ def api():
         with Client(('localhost', 6000)) as conn:
             conn.send({
                 'lat': lat,
-                'long': long,
+                'lon': lon,
                 'radius': radius
             })
             results = conn.recv()
