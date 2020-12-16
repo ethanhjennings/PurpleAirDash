@@ -4,6 +4,7 @@ import json
 import logging
 import logging.handlers
 from math import *
+from statistics import mean
 from multiprocessing.connection import Listener
 import requests
 import threading
@@ -13,6 +14,8 @@ import traceback
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.executors.pool import ThreadPoolExecutor
 import numpy as np
+
+import aqi
 
 SERVER_ADDRESS = ('localhost', 6000)
 
@@ -63,7 +66,7 @@ class PurpleAirProxy:
             g = np.multiply(np.sqrt(f), R)
 
         return [self.data[sensor] for sensor in np.where(g<radius)[0].tolist()]
-    
+
     def run(self):
         log.info('Listening for connections...')
         #TODO: Multithreaded connection handling?
@@ -85,11 +88,21 @@ class PurpleAirProxy:
                         log.info('Calculation time: ' + str(end_time-start_time))
                         log.info('Num sensors returned: ' + str(len(nearest_sensors) if nearest_sensors is not None else 0))
 
+                        avg_pm25 = mean(s['pm2.5'] for s in nearest_sensors)
+                        avg_aqi = aqi.from_pm25(avg_pm25)
+                        message = aqi.to_message(avg_aqi)
+                        color = aqi.to_color(avg_aqi)
+
                         if nearest_sensors is not None:
                             conn.send({
-                                'data': nearest_sensors,
+                                'pm2.5': avg_pm25,
+                                'aqi': avg_aqi,
+                                'color': color,
+                                'level': message['level'],
+                                'message': message['message'],
                                 'last_modified': self.last_modified,
-                                'status': 'ok'
+                                'status': 'ok',
+                                'sensors': nearest_sensors,
                             })
                         else:
                             conn.send({'status': 'failure'})
@@ -143,13 +156,15 @@ class PurpleAirProxy:
 
             log.info("Got " + str(len(new_data)) + " sensors after cleaning")
 
-            # Convert to sensor format
+            # Convert to sensor format and pre-calculate values
             new_data = [
                 {
                     'name': d[field_idx['name']],
                     'lat': float(d[field_idx['latitude']]),
                     'lon': float(d[field_idx['longitude']]),
-                    'pm2.5': float(d[field_idx['pm2.5_10minute']])
+                    'pm2.5': (pm25 := float(d[field_idx['pm2.5_10minute']])),
+                    'aqi': (aqi_v := aqi.from_pm25(pm25)),
+                    'color': aqi.to_color(aqi_v)
                 }
                 for d in new_data
             ]

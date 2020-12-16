@@ -38,7 +38,16 @@ def api():
     except ConnectionRefusedError:
         return jsonify(status="error", message="Unable connect to purple air proxy"), 502
 
-    return jsonify(data=results['data'], last_modified=results['last_modified'], status="ok")
+    return jsonify({
+        'aqi': results['aqi'],
+        'pm2.5': results['pm2.5'],
+        'color': results['color'],
+        'level': results['level'],
+        'message': results['message'],
+        'last_modified': int(results['last_modified']),
+        'status': 'ok',
+        'sensors': results['sensors']
+    })
 
 @app.route('/<path:filename>')
 def send_js(filename):

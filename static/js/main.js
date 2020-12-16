@@ -141,7 +141,7 @@ function refreshData() {
     fetch(url)
         .then(data=>data.json())
         .then(res=>{
-            updateAQIBox(res['data']);
+            updateAQIBox(res['sensors']);
             updateMap(lat, lng, true);
             updateURLFragment();
         });
