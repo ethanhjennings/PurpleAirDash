@@ -3,3 +3,4 @@ requests==2.24.0
 Flask==1.1.2
 pyopenssl==19.1.0
 numpy==1.18.1
+uWSGI==2.0.19.1

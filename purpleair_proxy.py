@@ -31,7 +31,7 @@ logging.basicConfig(
     format="%(asctime)s - %(name)s - [%(levelname)s] %(message)s",
     handlers = [
         logging.handlers.RotatingFileHandler(
-            'logs/purpleair_proxy.log',
+            'logs/purpleair_proxy/purpleair_proxy.log',
             maxBytes=10*1024*1024,
             backupCount=5
         ),
