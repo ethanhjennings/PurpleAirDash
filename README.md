@@ -4,7 +4,11 @@ A project to recreate a simple one-glance dashboard like [airnow.gov](https://ww
 [View it running here](https://ethanj.me/aqi)
 
 ## Hosting it yourself
- 
+
+### Requirements
+* Python 3.8+
+* Optional: SSL cert for location services
+
 ### Installation
 
 Create a virtual environment and install with pip
