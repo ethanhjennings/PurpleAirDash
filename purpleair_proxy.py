@@ -57,15 +57,15 @@ class PurpleAirProxy:
             R = 6371 # radius of the earth in km
             cur_lat, cur_lon = np.radians(lat), np.radians(lon)
             rad_lats, rad_lons = np.radians(self.lats), np.radians(self.lons)
-            a = np.subtract(rad_lats, cur_lat)
-            b = np.subtract(rad_lons, cur_lon)
-            c = np.multiply(np.add(rad_lats, cur_lat), 0.5)
-            d = np.cos(c)
-            e = np.multiply(d, b)
-            f = np.add(np.power(a, 2), np.power(e, 2))
-            g = np.multiply(np.sqrt(f), R)
+            lat_diffs = np.subtract(rad_lats, cur_lat)
+            lon_diffs = np.subtract(rad_lons, cur_lon)
+            lat_midpoints = np.multiply(np.add(rad_lats, cur_lat), 0.5)
+            midpoints_cos = np.cos(lat_midpoints)
+            midpoint_lon_products = np.multiply(midpoints_cos, lon_diffs)
+            squared_latlon_sums = np.add(np.power(lat_diffs, 2), np.power(midpoint_lon_products, 2))
+            sensor_distances = np.multiply(np.sqrt(squared_latlon_sums), R)
 
-        return [self.data[sensor] for sensor in np.where(g<radius)[0].tolist()]
+        return [self.data[sensor] for sensor in np.where(sensor_distances<radius)[0].tolist()]
 
     def run(self):
         log.info('Listening for connections...')
