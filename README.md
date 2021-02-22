@@ -1,7 +1,7 @@
 # Purple Air Quick Dashboard
-A project to recreate a simple one-glance dashboard like [airnow.gov](https://www.airnow.gov) but with data from [Purple Air](https://www.purpleair.com/)
+A project to recreate a simple one-glance dashboard like [airnow.gov](https://www.airnow.gov/) but with data from [Purple Air](https://www.purpleair.com/)
 
-[View it running here](https://ethanj.me/aqi)
+[View it running here](https://ethanj.me/aqi/)
 
 ## Hosting it yourself
 
