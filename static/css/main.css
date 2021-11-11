@@ -1,6 +1,6 @@
 body {
     font-family: Arial, Helvetica, sans-serif;
-    background-color: #eeeeee;
+    background-color: #ffffff;
     color: #222222;
     margin: 0;
     padding: 0;
@@ -25,10 +25,10 @@ input[type=text] {
     vertical-align: middle;
     margin: 0;
 
-    color: #222222;
-    background-color: #eeeeee;
+    color: #222222 !important;
+    background-color: #ffffff;
 
-    border: 2px solid #666666;
+    border: 1px solid #666666;
     border-radius: 8px;
     outline: none;
     -webkit-appearance: none;
@@ -43,7 +43,11 @@ input[type=text] {
 }
 
 input[type=text]:focus {
-    border-color: #222222;
+     border: 1px solid #000000 !important;
+}
+
+input[type=text]::placeholder {
+    color: #666666 !important;
 }
 
 select {
@@ -52,12 +56,12 @@ select {
     padding-left: 0.4rem;
     padding-right: 1.2rem;
     margin-right: 0.3rem;
-    border: 2px solid #666666;
+    border: 1px solid #666666;
     border-radius: 8px;
     outline: none;
     appearance: none;
 
-    background-color: #eeeeee;
+    background-color: #ffffff;
 
     background-image: url("../icons/down_arrow.png");
     background-repeat: no-repeat;
@@ -80,7 +84,7 @@ select:after {
     height: 3rem;
     vertical-align: middle;
     position: absolute;
-    right: 0.25rem;
+    right: 0.2rem;
     cursor: pointer;
 
     border: none;
@@ -114,7 +118,7 @@ select:after {
 .aqi-value-box {
     width: 40%;
     height: 80%;
-    border-right: 2px solid #222222;
+    border-right: 1px solid #222222;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -220,4 +224,48 @@ select:after {
     #map {
         width: 100%;
     }
+}
+
+
+/* autoCompleteJS overrides */
+.autoComplete_wrapper > input {
+    background-image: none;
+}
+
+.autoComplete_wrapper > ul {
+    z-index: 2000;
+}
+
+.autoComplete_wrapper {
+    width: 100%;
+}
+
+.autoComplete_wrapper > ul {
+    border: 1px solid #000000;
+    border-radius: 8px;
+    box-shadow: none;
+}
+
+.autoComplete_wrapper > ul > li:hover {
+  cursor: pointer;
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+.autoComplete_wrapper > input:focus::selection {
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+.autoComplete_wrapper > input::selection {
+  background-color: rgba(255, 122, 122, 0.15);
+}
+
+
+/* Custom autocomplete elements */
+.ac-short-name {
+    font-size: 0.9rem;
+}
+
+.ac-address {
+    font-size: 0.75rem;
+    color: #666666;
 }

@@ -2,11 +2,14 @@
 
 var lat = null;
 var lng = null;
+var lat_lng_str = null;
 var map = null;
 var marker = null;
 var sensorMarkers = [];
 var radius = 2;
 var correction_type = "none";
+var auto_complete;
+var autocomplete_timestamp = 0;
 
 function aqiColorCircleIcon(aqi, color, text_color) {
     let div = document.createElement('div');
@@ -118,17 +121,16 @@ function updateAQIBox(sensors) {
     }
 }
 
-function updateLocation(position) {
-    if (lat !== null && lng !== null &&
-        position.coords.latitude.toFixed(5) === lat.toFixed(5) &&
-        position.coords.longitude.toFixed(5) === lng.toFixed(5)) {
-        // No change, so no need to re-query and render everything
-        return;
-    }
+function updateLocation(position, address) {
     lat = position.coords.latitude;
     lng = position.coords.longitude;
+    lat_lng_str = lat.toFixed(5) + ', ' + lng.toFixed(5);
     let location_input = document.getElementById("location_input");
-    location_input.value = lat.toFixed(5) + ', ' + lng.toFixed(5);
+    if (typeof address !== 'undefined') {
+        location_input.value = address;
+    } else {
+        location_input.value = lat_lng_str;
+    }
     refreshData();
 }
 
@@ -145,7 +147,6 @@ function refreshData() {
             updateMap(lat, lng, true);
             updateURLFragment();
         });
-
 }
 
 function parseLatLong(str) {
@@ -167,7 +168,7 @@ function parseLatLong(str) {
 }
 
 function updateURLFragment() {
-  const location = document.getElementById('location_input').value;
+  const location = lat_lng_str;
   const radius = document.getElementById('radius').value;
   const correction = document.getElementById('correction').value;
 
@@ -258,6 +259,72 @@ if (entrypoint === "main") {
             location_input.value = url_location;
             handleInputEvent();
         }
+
+        // autoCompleteJS config - defines how to query mapbox's geocoding api and how to render results
+        autoComplete = new autoComplete({
+            selector: "#location_input",
+            placeHolder: "Enter location...",
+            data: {
+                src: async (query) => {
+                    const url = 'https://api.mapbox.com/geocoding/v5/mapbox.places/' +
+                        query + '.json' +
+                        '?limit=6' +
+                        '&proximity=' + lng + ',' + lat +
+                        '&language=en-US' +
+                        '&access_token=pk.eyJ1IjoiZXRoYW5qZW4iLCJhIjoiY2t2dW1ibmhlMDhvcjJ2bXI1YmUweDdhNSJ9.AI-2rOytBvkMN2Kc6_tjsA';
+
+                    // Save timestamp before querying endpoint
+                    const sent_timestamp = (new Date()).getTime();
+                    autocomplete_timestamp = sent_timestamp;
+                    const response = await fetch(url);
+                    let json = await response.json();
+
+                    // Reject out of order results
+                    if (sent_timestamp < autocomplete_timestamp) {
+                        return Error("Old results");
+                    }
+
+                    if (typeof json.features === "undefined" || json.features.length === 0) {
+                        return Error("No results");
+                    }
+
+                    return json.features.map((feature) => {
+                        const lat = feature.center[1];
+                        const lng = feature.center[0];
+
+                        // Dubious assumption that everything before the first comma is the
+                        // name and after is the address
+                        const comma_idx = feature.place_name.indexOf(',');
+
+                        let element;
+                        if (comma_idx === -1) {
+                            element = '<div class="short-name">' + feature.place_name + '</div>';
+                        } else {
+                            let short_name = feature.place_name.substring(0, comma_idx).trim();
+                            let address = feature.place_name.substring(comma_idx + 1).trim();
+                            element = '<div class="ac-short-name">' + short_name + '</div>' +
+                                      '<div class="ac-address">' + address + '</div>';
+                        }
+                        return {
+                            'html_element': element,
+                            'address': feature.place_name,
+                            'lat': lat,
+                            'lng': lng,
+                        };
+                    });
+                },
+                keys: ["html_element"],
+            },
+            searchEngine: (q, r) => r, // no-op search engine b/c we don't want any special filtering
+        });
+
+        autoComplete.input.addEventListener("selection", function (event) {
+            const value = event.detail.selection.value;
+            autoComplete.input.blur();
+            updateLocation({
+                coords:  {latitude: value.lat, longitude: value.lng}
+            }, value.address);
+        });
 
         // Hack to get :active css selector working on mobile
         document.addEventListener("touchstart", function() {}, true);
