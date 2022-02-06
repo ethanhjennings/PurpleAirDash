@@ -88,6 +88,19 @@ class PurpleAirProxy:
                         log.info('Calculation time: ' + str(end_time-start_time))
                         log.info('Num sensors returned: ' + str(len(nearest_sensors) if nearest_sensors is not None else 0))
 
+                        if len(nearest_sensors) == 0:
+                            conn.send({
+                                'pm2.5': None,
+                                'aqi': None,
+                                'color': None,
+                                'level': None,
+                                'message': None,
+                                'last_modified': self.last_modified,
+                                'status': 'ok',
+                                'sensors': [],
+                            })
+                            continue
+
                         avg_pm25 = mean(s['pm2.5'] for s in nearest_sensors)
                         avg_aqi = aqi.from_pm25(avg_pm25)
                         message = aqi.to_message(avg_aqi)
