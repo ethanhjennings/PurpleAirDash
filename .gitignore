@@ -1,4 +1,6 @@
 venv/
 logs/*.log*
 __pycache__/
-api_key.txt
+data/
+*.env
+*.swp

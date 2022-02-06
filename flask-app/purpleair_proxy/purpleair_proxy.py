@@ -6,7 +6,9 @@ import logging.handlers
 from math import *
 from statistics import mean
 from multiprocessing.connection import Listener
+import os
 import requests
+import sys
 import threading
 import time
 import traceback
@@ -23,15 +25,15 @@ API_URL = 'https://api.purpleair.com/v1/sensors'
 API_FIELDS = ['sensor_index', 'name', 'location_type', 'latitude', 'longitude', 'confidence', 'pm2.5_10minute']
 SENSOR_MAX_AGE = 60*10 # We want the 10 minute average so longer than that could mess with readings
 
-with open('api_key.txt') as f:
-    API_KEY = f.read().strip()
+LOG_FILE='logs/purpleair_proxy.log'
 
+os.makedirs(os.path.dirname(LOG_FILE), exist_ok=True)
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(name)s - [%(levelname)s] %(message)s",
     handlers = [
         logging.handlers.RotatingFileHandler(
-            'logs/purpleair_proxy/purpleair_proxy.log',
+            'logs/purpleair_proxy.log',
             maxBytes=10*1024*1024,
             backupCount=5
         ),
@@ -39,6 +41,11 @@ logging.basicConfig(
     ]
 )
 log = logging.getLogger()
+
+API_KEY = os.getenv("PURPLEAIR_API_KEY")
+if API_KEY is None:
+    log.error("No API key given, please add one to the environment with PURPLEAIR_API_KEY")
+    sys.exit(1)
 
 class PurpleAirProxy:
     def __init__(self):

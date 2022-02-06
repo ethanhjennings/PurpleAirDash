@@ -271,7 +271,7 @@ if (entrypoint === "main") {
                         '?limit=6' +
                         '&proximity=' + lng + ',' + lat +
                         '&language=en-US' +
-                        '&access_token=pk.eyJ1IjoiZXRoYW5qZW4iLCJhIjoiY2t2dW1ibmhlMDhvcjJ2bXI1YmUweDdhNSJ9.AI-2rOytBvkMN2Kc6_tjsA';
+                        '&access_token=${MAPBOX_API_KEY}';
 
                     // Save timestamp before querying endpoint
                     const sent_timestamp = (new Date()).getTime();

@@ -6,33 +6,42 @@ A project to recreate a simple one-glance dashboard like [airnow.gov](https://ww
 ## Hosting it yourself
 
 ### Requirements
-* Python 3.8+
-* Optional: SSL cert for location services
+* Docker
+* Purpleair and Mapbox free API keys
 
 ### Installation
 
-Create a virtual environment and install with pip
+First copy and rename all the \*.env.example files in `env` to \*.env
 ```
-pip install -r requirements.txt
-```
-
-Note, location services requires ssl. `app.py` will run as Flask's adhoc ssl context so you don't need a cert.
-This might make the page show as unsafe in chrome but location services should *hopefully* work.
-You can add your own cert if you have one to `app.py`
-
-### Running in debug mode
-
-Run the flask app in debug mode for development/testing
-```
-python3 app.py
+cp env/common.env.example env/common.env
+cp env/prod.env.example env/prod.env
+cp env/dev.env.example env/dev.env
 ```
 
-In another terminal also run the purple air proxy server
+Then edit the values for your setup. You will need to sign up for a couple free API keys.
+
+Now build with docker:
+
 ```
-python3 purpleair_proxy.py
+docker build
 ```
+
+Then to run:
+
+```
+docker compose up
+```
+
+SSL is required for location services to work, so the default docker compose config installs a self-signed cert.
 
 ### Running in production
 
-You'll need a WSGI server like uWSGI or gunicorn, and potenitally another faster server to proxy it like nginx.
-For example here's [a tutorial on nginx + uWSGI for flask](https://flask.palletsprojects.com/en/1.1.x/deploying/uwsgi/) and you can see my wsgi config in `wsgi.ini`.
+To build:
+```
+docker compose build -f docker-compose.prod.yml
+```
+
+To run:
+```
+docker compose up -f docker-compose.prod.yml
+```

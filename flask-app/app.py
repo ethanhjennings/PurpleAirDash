@@ -8,6 +8,12 @@ from math import *
 app = Flask(__name__)
 app.config['JSONIFY_PRETTYPRINT_REGULAR'] = True
 
+# Serve static content as a fallback. nginx should normally serve it.
+@app.route('/<path:filename>')
+def send_js(filename):
+    return send_from_directory('static/', filename)
+
+# Also a fallback
 @app.route('/')
 def aqi():
     return app.send_static_file('index.html')
@@ -49,10 +55,6 @@ def api():
         'status': 'ok',
         'sensors': results['sensors']
     })
-
-@app.route('/<path:filename>')
-def send_js(filename):
-    return send_from_directory('static/', filename)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', debug=True, ssl_context='adhoc')

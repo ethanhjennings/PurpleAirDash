@@ -1,0 +1,22 @@
+services:
+  flask-app:
+    image: flask-app
+    build: ./flask-app
+    expose:
+      - '5000'
+    volumes:
+      - ./data/static:/src/static-nginx
+    env_file:
+      - env/dev.env
+      - env/common.env
+
+  nginx-proxy:
+    image: nginx-proxy-development
+    build: ./nginx-proxy/development
+    ports:
+      - '80:80'
+      - '443:443'
+    volumes:
+      - ./data/static:/www/static:ro
+    depends_on:
+      - flask-app
